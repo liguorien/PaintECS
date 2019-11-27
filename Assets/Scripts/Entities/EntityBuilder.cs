@@ -4,7 +4,7 @@ namespace PaintECS
 {
     public class EntityBuilder
     {
-        private static EntityManager EntityManager => World.Active.EntityManager;
+        private static EntityManager EntityManager => World.DefaultGameObjectInjectionWorld.EntityManager;
         
         public static EntityBuilder Create()
         {
@@ -20,7 +20,7 @@ namespace PaintECS
 
         public EntityBuilder()
         {
-            _entity = World.Active.EntityManager.CreateEntity();
+            _entity = EntityManager.CreateEntity();
         }
         
         public EntityBuilder(Entity entity)

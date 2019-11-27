@@ -111,7 +111,7 @@ namespace PaintECS
         
         public void Execute(Entity entity, int index, ref T c1)
         {
-            Debug.Log("Removing component : " + c1);
+     //       Debug.Log("Removing component : " + c1);
             Buffer.RemoveComponent<T>(index, entity);
         }
     }

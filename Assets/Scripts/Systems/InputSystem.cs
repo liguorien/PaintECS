@@ -7,33 +7,20 @@ using UnityEngine;
 
 namespace PaintECS
 {
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
     public class InputSystem : JobComponentSystem
     {
-        
         private EntityCommandBufferSystem _commandBufferSystem;
         private Vector3 _lastMousePosition = Vector3.zero;
-        private NativeQueue<Hit> _hitList;
 
         protected override void OnCreate()
         {
-            _commandBufferSystem = World.Active.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
+            _commandBufferSystem = World.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
         }
 
-        protected override void OnDestroy()
-        {
-            if (_hitList.IsCreated)
-            {
-                _hitList.Dispose();    
-            }
-        }
 
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
-            if (_hitList.IsCreated)
-            {
-                _hitList.Dispose();
-            }
-            
             if (Input.GetMouseButtonDown(0))
             {
                 _lastMousePosition = GetMouseWorldPosition();
@@ -44,24 +31,28 @@ namespace PaintECS
                 
                // Debug.DrawLine(lastMousePosition , mousePosition, Color.red, 1f, false);
                 
-                _hitList = new NativeQueue<Hit>(Allocator.TempJob);
-
+                var hitList = new NativeQueue<Hit>(Allocator.TempJob);
+                
                 CaptureInputJob job = new CaptureInputJob
                 {
-                    hitList = _hitList.AsParallelWriter(),
+                    hitList = hitList.AsParallelWriter(),
                     mousePosition = mousePosition,
                     lastMousePosition = _lastMousePosition
                 };
 
                 inputDependencies = job.Schedule(this, inputDependencies);
 
-                var processJob = new ProcessInputJob
+                ProcessInputJob processJob = new ProcessInputJob
                 {
-                    HitList = _hitList,
+                    HitList = hitList,
                     Buffer = _commandBufferSystem.CreateCommandBuffer()
                 };
 
-                inputDependencies = processJob.Schedule(inputDependencies);    
+                
+                
+                inputDependencies = IJobExtensions.Schedule(processJob, inputDependencies);
+
+                inputDependencies = hitList.Dispose(inputDependencies);
                 
                 _commandBufferSystem.AddJobHandleForProducer(inputDependencies);
                 

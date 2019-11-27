@@ -52,7 +52,7 @@ namespace PaintECS
             var hitList = new NativeQueue<Entity>(Allocator.TempJob);
             var job = new RotateGameCubeSystemJob
             {
-                deltaTime = Time.deltaTime,
+                deltaTime = Time.DeltaTime,
                 hitList = hitList.AsParallelWriter()
             };
 

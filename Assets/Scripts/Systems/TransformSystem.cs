@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace PaintECS
 {
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class TransformSystem : JobComponentSystem
     {
         protected override JobHandle OnUpdate(JobHandle inputDependencies)

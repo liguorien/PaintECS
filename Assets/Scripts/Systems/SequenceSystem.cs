@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace PaintECS
 {
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
     public class SequenceSystem : JobComponentSystem
     {
 
@@ -14,14 +15,14 @@ namespace PaintECS
         
         protected override void OnCreate()
         {
-            _commandBufferSystem = World.Active.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
+            _commandBufferSystem = World.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
             inputDependencies = new SergeJob
             {
-                deltaTime = Time.deltaTime,
+                deltaTime = Time.DeltaTime,
                 SequenceCommandBuffers = GetBufferFromEntity<SequenceCommand>(),
                 EntityCommandBuffer = _commandBufferSystem.CreateCommandBuffer().ToConcurrent()
             }.Schedule(this, inputDependencies);

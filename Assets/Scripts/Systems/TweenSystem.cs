@@ -6,6 +6,7 @@ using Unity.Mathematics;
 using UnityEngine;
 
 [UpdateBefore(typeof(TransformSystem))]
+[UpdateInGroup(typeof(SimulationSystemGroup))]
 public class TweenSystem : JobComponentSystem
 {
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
@@ -13,11 +14,11 @@ public class TweenSystem : JobComponentSystem
         return JobHandle.CombineDependencies(
             new MoveToJob
             {
-                deltaTime = Time.deltaTime
+                deltaTime = Time.DeltaTime
             }.Schedule(this, inputDependencies),
             new RotateToJob
             {
-                deltaTime = Time.deltaTime
+                deltaTime = Time.DeltaTime
             }.Schedule(this, inputDependencies)
         );
     }

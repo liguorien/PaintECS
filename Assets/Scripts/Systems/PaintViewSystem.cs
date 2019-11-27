@@ -7,61 +7,83 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Random = Unity.Mathematics.Random;
 
+[UpdateInGroup(typeof(InitializationSystemGroup))]
 public class PaintViewSystem : JobComponentSystem
 {
     #region Main System
   
     private EntityCommandBufferSystem _commandBufferSystem;
-    
+     
     protected override void OnCreate()
     {
-        _commandBufferSystem = World.Active.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
+        _commandBufferSystem = World.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
         InitExplodeQueries();
         InitImplodeQueries();
         InitMoveQueries();
-        InitRestoreQueries();
+        InitRestoreQueries(); 
     }
+
 
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
     {
         var handles = new NativeArray<JobHandle>(4, Allocator.Temp);
         handles[0] = processViewCommand<ExplodeView, ExplodeViewJobData, PrepareExplodeJob, ExplodeJob>(
-            inputDependencies, _explodeJobsQuery, ref _explodeData
+            inputDependencies, _explodeJobsQuery
         );
         handles[1] = processViewCommand<ImplodeView, ImplodeViewJobData, PrepareImplodeViewJob, ImplodeViewJob>(
-            inputDependencies, _implodeJobsQuery, ref _implodeData
+            inputDependencies, _implodeJobsQuery
         );
         handles[2] = processViewCommand<MoveView, MoveViewJobData, PrepareMoveViewJob, MovePaintViewJob>(
-            inputDependencies, _moveJobsQuery, ref _moveData
+            inputDependencies, _moveJobsQuery
         );
         handles[3] = processViewCommand<RestoreParentView, RestoreParentJobData, PrepareRestoreParentJob, RestoreParentViewJob>(
-            inputDependencies, _restoreJobsQuery, ref _restoreData
+            inputDependencies, _restoreJobsQuery
         );
         
         inputDependencies = JobHandle.CombineDependencies(handles);
         
         handles.Dispose();
+//        
+//            inputDependencies = processViewCommand<ExplodeView, ExplodeViewJobData, PrepareExplodeJob, ExplodeJob>(
+//                        inputDependencies, _explodeJobsQuery
+//                    );
+//            
+//            inputDependencies = processViewCommand<ImplodeView, ImplodeViewJobData, PrepareImplodeViewJob, ImplodeViewJob>(
+//                inputDependencies, _implodeJobsQuery
+//            );
+//            
+//            inputDependencies = processViewCommand<MoveView, MoveViewJobData, PrepareMoveViewJob, MovePaintViewJob>(
+//                inputDependencies, _moveJobsQuery
+//            );
+//            
+//            inputDependencies =
+//                processViewCommand<RestoreParentView, RestoreParentJobData, PrepareRestoreParentJob,
+//                    RestoreParentViewJob>(
+//                    inputDependencies, _restoreJobsQuery
+//                );
+            
+            
+
+//            inputDependencies = JobHandle.CombineDependencies(handles);
+
+//            handles.Dispose();
         
+
         return inputDependencies;
     }
     
     
-    private JobHandle processViewCommand<T,D,P,J>(JobHandle inputDependencies, EntityQuery query, ref NativeHashMap<int, D> data)  
+    private JobHandle processViewCommand<T,D,P,J>(JobHandle inputDependencies, EntityQuery query)  
         where T : struct, IComponentData // component
         where D : struct                 // job data
         where P : struct, IPrepareJob<D> // prepare job
         where J : struct, IExecuteJob<D> // main job
     {
-        if (data.IsCreated)
-        {
-            data.Dispose();
-        }
-        
         int jobsCount = query.CalculateEntityCount();
-        
+
         if (jobsCount > 0)
         {
-            data = new NativeHashMap<int, D>(jobsCount, Allocator.TempJob);
+            var data = new NativeHashMap<int, D>(jobsCount, Allocator.TempJob);
 
             var prepareJob = new P();
             prepareJob.setData(data.AsParallelWriter());
@@ -73,15 +95,18 @@ public class PaintViewSystem : JobComponentSystem
             {
                 Buffer = _commandBufferSystem.CreateCommandBuffer().ToConcurrent()
             };
-            
+
             inputDependencies = JobForEachExtensions.Schedule(prepareJob, query, inputDependencies);
             inputDependencies = JobHandle.CombineDependencies(
                 executeJob.Schedule(this, inputDependencies),
                 purgeJob.Schedule(this, inputDependencies)
             );
-            
+
+            inputDependencies = data.Dispose(inputDependencies);
+
             _commandBufferSystem.AddJobHandleForProducer(inputDependencies);
         }
+       
 
         return inputDependencies;
     }
@@ -102,7 +127,6 @@ public class PaintViewSystem : JobComponentSystem
     #region System
     
     private EntityQuery _explodeJobsQuery;
-    private NativeHashMap<int, ExplodeViewJobData> _explodeData;
 
     private void InitExplodeQueries()
     {
@@ -185,7 +209,6 @@ public class PaintViewSystem : JobComponentSystem
     
     #region System
     private EntityQuery _implodeJobsQuery;
-    private NativeHashMap<int, ImplodeViewJobData> _implodeData;
 
     private void InitImplodeQueries()
     {
@@ -257,7 +280,6 @@ public class PaintViewSystem : JobComponentSystem
 
     #region System
     private EntityQuery _moveJobsQuery;
-    private NativeHashMap<int, MoveViewJobData> _moveData;
     
     private void InitMoveQueries()
     {
@@ -277,8 +299,6 @@ public class PaintViewSystem : JobComponentSystem
     #endregion
     struct MoveViewJobData 
     {
-//        public Entity Entity;
-//        public ParentView PaintView;
         public float4x4 currentTransform;
         public float4x4 targetTransform;
         public float Duration;
@@ -296,8 +316,6 @@ public class PaintViewSystem : JobComponentSystem
             ref Rotation rotation,
             ref Scale scale)
         {
-//            Debug.Log("View    Position : " + position.Value + " Rotation=" + rotation.Value + " Scale=" + scale.Value);
-//            Debug.Log("command Position : " + command.Position + " Rotation=" + command.Rotation + " Scale=" + command.Scale);
             Data.TryAdd(view.Id, new MoveViewJobData
             {
                 Duration = command.Duration,
@@ -473,8 +491,6 @@ public class PaintViewSystem : JobComponentSystem
     #region Restore
 
     private EntityQuery _restoreJobsQuery;
-    private NativeHashMap<int, RestoreParentJobData> _restoreData;
-//    private EntityQuery restoreViewQuery;
 
     private void InitRestoreQueries()
     {

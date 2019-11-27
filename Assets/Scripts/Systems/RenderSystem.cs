@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace PaintECS
 {
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
     public class RenderSystem : JobComponentSystem
     {
         private const int BATCH_SIZE = 1023;
@@ -57,7 +58,7 @@ namespace PaintECS
         private void RenderInstancedMesh(RenderData renderData, JobHandle jobHandle)
         {
            
-            _renderQuery.SetFilter(renderData);
+            _renderQuery.SetSharedComponentFilter(renderData);
             int count = _renderQuery.CalculateEntityCount();
             if (count == 0)
             {

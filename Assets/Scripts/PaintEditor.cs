@@ -11,7 +11,7 @@ namespace PaintECS
 {
     public class PaintEditor : MonoBehaviour
     {
-        private EntityManager EntityManager => World.Active.EntityManager;
+        private EntityManager EntityManager => World.DefaultGameObjectInjectionWorld.EntityManager;
 
         public int width;
 
@@ -61,6 +61,7 @@ namespace PaintECS
         {
             if (!_paintEditorEnabled)
             {
+                Debug.Log("Paint Editor Disabled");
                 return;
             }
 

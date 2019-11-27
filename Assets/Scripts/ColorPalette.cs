@@ -8,7 +8,7 @@ namespace DefaultNamespace
 {
     public class ColorPalette : MonoBehaviour
     {
-          private EntityManager EntityManager => World.Active.EntityManager;
+      
 
         public int width;
 

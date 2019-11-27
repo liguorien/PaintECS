@@ -9,7 +9,7 @@ namespace PaintECS
 {
     public class PaintView : MonoBehaviour
     {
-        private EntityManager EntityManager => World.Active.EntityManager;
+        private EntityManager EntityManager => World.DefaultGameObjectInjectionWorld.EntityManager;
 
         public int width;
 
@@ -349,12 +349,6 @@ namespace PaintECS
                 .Build();
 
             Profiler.EndSample();
-            
-//            World.Active.GetOrCreateSystem<RenderSystem>().initialize(new RenderSystem.RenderConfig
-//            {
-//                material = material, //cubePrefab.GetComponent<MeshRenderer>().sharedMaterial,
-//                mesh = mesh //cubePrefab.GetComponent<MeshFilter>().sharedMesh
-//            });
         }
     }
 }

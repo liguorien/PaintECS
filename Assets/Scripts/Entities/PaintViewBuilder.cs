@@ -95,7 +95,7 @@ namespace PaintECS
             }
             
 
-            var EntityManager = World.Active.EntityManager;
+            var EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
             
           //  Color[] textureColors = _sourceTexture.GetPixels();
             
@@ -186,7 +186,7 @@ namespace PaintECS
                 typeof(RenderColor),
                 typeof(ParentId));
 
-            query.SetFilter(parentView.ParentViewId());
+            query.SetSharedComponentFilter(parentView.ParentViewId());
             query.CopyFromComponentDataArray(parentIds);
             query.CopyFromComponentDataArray(pixelCubes);
             query.CopyFromComponentDataArray(colors);

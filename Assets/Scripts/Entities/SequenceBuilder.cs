@@ -8,7 +8,7 @@ namespace PaintECS.Entities
 {
     public class SequenceBuilder
     {
-        private static EntityManager EntityManager => World.Active.EntityManager;
+        private static EntityManager EntityManager => World.DefaultGameObjectInjectionWorld.EntityManager;
         
         public static SequenceBuilder Create()
         {
