@@ -1,20 +1,22 @@
+using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
 
 namespace PaintECS
 {
-    public class CameraPositionSystem : ComponentSystem
+    public partial struct CameraPositionSystem : ISystem
     {
-        protected override void OnUpdate()
+      
+        public void OnUpdate(ref SystemState state)
         {
-            Entities.ForEach((Entity id, ref CameraController controller, ref Position position) =>
+            foreach (var (controller, position) in
+                     SystemAPI.Query<RefRO<CameraController>, RefRO<Position>>())
             {
-                if (controller.Active)
+                if (controller.ValueRO.Active)
                 {
-                    Debug.Log("position : " + position.Value + " offset=" + controller.Offset);
-                    Camera.main.transform.position = position.Value + controller.Offset;
+                    Camera.main.transform.position = position.ValueRO.Value + controller.ValueRO.Offset;
                 }
-            });
+            };
         }
     }
 }

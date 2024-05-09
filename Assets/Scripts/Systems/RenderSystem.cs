@@ -6,11 +6,12 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace PaintECS
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public class RenderSystem : JobComponentSystem
+    public partial class RenderSystem : SystemBase
     {
         private const int BATCH_SIZE = 1023;
 
@@ -19,9 +20,8 @@ namespace PaintECS
         private Vector4[] _colors = new Vector4[BATCH_SIZE];
         private MaterialPropertyBlock _propertyBlock = new MaterialPropertyBlock();
         private List<RenderData> _renderDatas = new List<RenderData>(2);
-        
-
-        protected override void OnCreate()
+     
+        protected override  void OnCreate()
         {
             _renderQuery = GetEntityQuery(new EntityQueryDesc {
                 All = new[]{
@@ -32,39 +32,38 @@ namespace PaintECS
             });
         }
         
-        protected override JobHandle OnUpdate(JobHandle inputDependencies)
+        protected override void OnUpdate()
         {
-            
-            EntityManager.GetAllUniqueSharedComponentData(_renderDatas);
+            EntityManager.GetAllUniqueSharedComponentsManaged(_renderDatas);
 
             if (_renderDatas.Count == 0)
             {
-                return inputDependencies;
+                return;
             }
             
             for (int i = 0; i < _renderDatas.Count; i++)
             {
                 if (_renderDatas[i].Mesh != null)
                 {
-                    RenderInstancedMesh(_renderDatas[i], inputDependencies);
+                    RenderInstancedMesh(_renderDatas[i], Dependency);
                 }
             }
 
             _renderDatas.Clear();
-            
-            return inputDependencies;
         }
 
         private void RenderInstancedMesh(RenderData renderData, JobHandle jobHandle)
         {
-           
-            _renderQuery.SetSharedComponentFilter(renderData);
+            _renderQuery.SetSharedComponentFilterManaged(renderData);
             int count = _renderQuery.CalculateEntityCount();
             if (count == 0)
             {
                 return;
             }
 
+            Profiler.BeginSample("RenderSystem");
+            
+            
             var matricesBuffer = new NativeArray<float4x4>(count, Allocator.TempJob);
             var colorsBuffer = new NativeArray<Vector4>(count, Allocator.TempJob);
 
@@ -74,37 +73,49 @@ namespace PaintECS
                 colors = colorsBuffer
             };
 
-            JobForEachExtensions.Schedule(job, _renderQuery, jobHandle).Complete();
-
+            Profiler.BeginSample("PopulateBuffers");
+            job.ScheduleParallel(_renderQuery, jobHandle).Complete();
+            Profiler.EndSample(); // PopulateBuffers
             
             for (int i = 0; i < count; i += BATCH_SIZE)
             {
                 int len = Math.Min(count - i, BATCH_SIZE);
                 
+                Profiler.BeginSample("CopyMatrices");
                 Utils.CopyNativeToManaged(ref _matrices, matricesBuffer, i, len);
+                Profiler.EndSample(); // CopyMatrices
+                
+                Profiler.BeginSample("CopyColors");
                 Utils.CopyNativeToManaged<Vector4>(ref _colors, colorsBuffer, i, len);
+                Profiler.EndSample(); // CopyColors
                 _propertyBlock.SetVectorArray("_BaseColor", _colors);
+                
+                Profiler.BeginSample("DrawMeshInstanced");
                 Graphics.DrawMeshInstanced(renderData.Mesh, 0, renderData.Material, _matrices, len, _propertyBlock);
+                Profiler.EndSample(); // CopyCo
             }
                 
+            Profiler.BeginSample("Dispose");
             matricesBuffer.Dispose();
             colorsBuffer.Dispose();
+            Profiler.EndSample(); // Dispose
+            
+            Profiler.EndSample(); // RenderSystem
         }
        
    
 
         [BurstCompile]
-        struct CollectMatricesJob : IJobForEachWithEntity<WorldTransform, RenderColor>
+        partial struct CollectMatricesJob : IJobEntity
         {
             [WriteOnly] public NativeArray<float4x4> output;
 
             [WriteOnly] public NativeArray<Vector4> colors;
 
             public void Execute(
-                Entity entity,
-                int index,
-                [ReadOnly] ref WorldTransform transform,
-                [ReadOnly] ref RenderColor color)
+                [EntityIndexInQuery] int index,
+                in WorldTransform transform,
+                in RenderColor color)
             {
                 output[index] = transform.Value;
                 colors[index] = color.Value;

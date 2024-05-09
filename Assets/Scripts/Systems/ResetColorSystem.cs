@@ -1,22 +1,19 @@
 using Unity.Entities;
-using Unity.Jobs;
 using UnityEngine;
 
 namespace PaintECS
 {
-    public class ResetColorSystem : JobComponentSystem
+    public partial class ResetColorSystem : SystemBase
     {
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        protected override void OnUpdate()
         {
             if (Input.GetKeyDown(KeyCode.RightControl))
             {
-                return new ResetColorJob().Schedule(this, inputDeps);
+                Dependency = new ResetColorJob().Schedule(Dependency);
             }
-            
-            return inputDeps;
         }
 
-        struct ResetColorJob : IJobForEach<RenderColor>
+        partial struct ResetColorJob : IJobEntity
         {
             public void Execute(ref RenderColor c0)
             {

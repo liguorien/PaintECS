@@ -9,7 +9,7 @@ namespace PaintECS
         public Easing Easing;
 
         
-        public static ImplodeView fromData(float duration, ResizableArray64Byte<float> data)
+        public static ImplodeView fromData(float duration, FixedList64Bytes<float> data)
         {
             return new ImplodeView
             {

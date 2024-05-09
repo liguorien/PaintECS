@@ -8,44 +8,35 @@ using UnityEngine;
 namespace PaintECS
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
-    public class SequenceSystem : JobComponentSystem
+    public partial struct SequenceSystem : ISystem
     {
-
-        private EntityCommandBufferSystem _commandBufferSystem;
-        
-        protected override void OnCreate()
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
-            _commandBufferSystem = World.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
-        }
-
-        protected override JobHandle OnUpdate(JobHandle inputDependencies)
-        {
-            inputDependencies = new SergeJob
+            state.Dependency = new SergeJob
             {
-                deltaTime = Time.DeltaTime,
-                SequenceCommandBuffers = GetBufferFromEntity<SequenceCommand>(),
-                EntityCommandBuffer = _commandBufferSystem.CreateCommandBuffer().ToConcurrent()
-            }.Schedule(this, inputDependencies);
-
-            _commandBufferSystem.AddJobHandleForProducer(inputDependencies);
-           
-            return inputDependencies;
+                deltaTime = Time.deltaTime,
+                SequenceCommandBuffers = SystemAPI.GetBufferLookup<SequenceCommand>(),
+                EntityCommandBuffer = SystemAPI
+                    .GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>()
+                    .CreateCommandBuffer(state.WorldUnmanaged)
+            }.Schedule(state.Dependency);
         }
     }
     
-//    [BurstCompile(CompileSynchronously = false)]
-    struct SergeJob : IJobForEachWithEntity<Sequence>
+    [BurstCompile]
+    partial struct SergeJob : IJobEntity
     {
         [NativeDisableParallelForRestriction]
-        public BufferFromEntity <SequenceCommand> SequenceCommandBuffers;
+        public BufferLookup <SequenceCommand> SequenceCommandBuffers;
         
         public float deltaTime;
 
-        public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+        public EntityCommandBuffer EntityCommandBuffer;
         
-        public void Execute(Entity entity, int index, ref Sequence sequence)
+        public void Execute(Entity entity, ref Sequence sequence)
         {
-        //    Debug.Log("command : "+ sequence.Index +"/" + sequence.Size);
+            //Debug.Log("command : "+ sequence.Index +"/" + sequence.Size);
             if (sequence.Index >= sequence.Size)
             {
                 return;
@@ -62,18 +53,18 @@ namespace PaintECS
                 {
                     if (sequence.ElapsedTime >= command.Delay)
                     {
-                        createCommandEntity(index, entity, ref sequence, ref command);
+                        createCommandEntity(entity, ref sequence, ref command);
                     }
                 }
                 else
                 {
-                    createCommandEntity(index, entity, ref sequence, ref command);
+                    createCommandEntity(entity, ref sequence, ref command);
                 }
             }
             
             if (command.Delay > 0 && !sequence.Created && sequence.ElapsedTime >= command.Delay)
             {
-                createCommandEntity(index, entity, ref sequence, ref command);
+                createCommandEntity(entity, ref sequence, ref command);
             }
             
 
@@ -86,24 +77,24 @@ namespace PaintECS
             
             if (sequence.Index >= sequence.Size)
             {
-                EntityCommandBuffer.RemoveComponent<Sequence>(index, entity);
+                EntityCommandBuffer.RemoveComponent<Sequence>(entity);
             }
         }
         
-        void createCommandEntity(int index, Entity entity, ref Sequence sequence, ref SequenceCommand command){
+        void createCommandEntity(Entity entity, ref Sequence sequence, ref SequenceCommand command){
             switch (command.Type)
             {
                 case CommandType.Explode :
-                    EntityCommandBuffer.AddComponent(index, entity, ExplodeView.fromData(command.Duration, command.Data));
+                    EntityCommandBuffer.AddComponent(entity, ExplodeView.fromData(command.Duration, command.Data));
                     break;
                 case CommandType.Implode :
-                    EntityCommandBuffer.AddComponent(index, entity, ImplodeView.fromData(command.Duration,command.Data));
+                    EntityCommandBuffer.AddComponent(entity, ImplodeView.fromData(command.Duration,command.Data));
                     break;
                 case CommandType.Move :
-                    EntityCommandBuffer.AddComponent(index, entity, MoveView.fromData(command.Duration, command.Data));
+                    EntityCommandBuffer.AddComponent(entity, MoveView.fromData(command.Duration, command.Data));
                     break;
                 case CommandType.RestoreParent :
-                    EntityCommandBuffer.AddComponent(index, entity, RestoreParentView.fromData(command.Data));
+                    EntityCommandBuffer.AddComponent(entity, RestoreParentView.fromData(command.Data));
                     break;
             }
         

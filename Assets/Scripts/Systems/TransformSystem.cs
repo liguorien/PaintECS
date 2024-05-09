@@ -1,45 +1,55 @@
-using System;
-using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace PaintECS
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    public class TransformSystem : JobComponentSystem
+    public partial struct TransformSystem : ISystem
     {
-        protected override JobHandle OnUpdate(JobHandle inputDependencies)
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
-            var parentMatrices = new NativeHashMap<int, float4x4>(16, Allocator.TempJob);
-            return parentMatrices.Dispose(
-                new CollectMatricesJob
-                {
-                    parentMatrices = parentMatrices
-                }.Schedule(this, 
-                new CollectParentMatricesJob
-                {
-                    output = parentMatrices.AsParallelWriter()
-                }.Schedule(this, inputDependencies))
-            );
+            var parentMatrices = new NativeParallelHashMap<int, float4x4>(16, Allocator.TempJob);
+
+            var collectParentsHandle = new CollectParentMatricesJob
+            {
+                output = parentMatrices.AsParallelWriter()
+            }.ScheduleParallel(state.Dependency);
+
+            state.Dependency = new UpdateTransformsJob
+            {
+                parentMatrices = parentMatrices
+            }.ScheduleParallel(collectParentsHandle);
+
+            parentMatrices.Dispose(state.Dependency);
+        }
+        
+        [BurstCompile]
+        public void OnCreate(ref SystemState state)
+        {
+           
         }
 
+        [BurstCompile]
+        public void OnDestroy(ref SystemState state)
+        {
+           
+        }
         
         #region Jobs
       
         [BurstCompile]
-        struct CollectParentMatricesJob : IJobForEach<Parent, Position, Rotation, Scale>
+        partial struct CollectParentMatricesJob : IJobEntity
         {
-            [WriteOnly] public NativeHashMap<int, float4x4>.ParallelWriter output;
+            [WriteOnly] public NativeParallelHashMap<int, float4x4>.ParallelWriter output;
             
-            public void Execute(
-                [ReadOnly] ref Parent parent,
-                [ReadOnly] ref Position position,
-                [ReadOnly] ref Rotation rotation,
-                [ReadOnly] ref Scale scale)
+            void Execute(
+                in Parent parent,
+                in Position position,
+                in Rotation rotation,
+                in Scale scale)
             {
                 
                 output.TryAdd(parent.Id, float4x4.TRS(position.Value, rotation.Value, scale.Value));
@@ -48,21 +58,19 @@ namespace PaintECS
         
 
         [BurstCompile]
-        struct CollectMatricesJob : IJobForEachWithEntity<ParentId, WorldTransform, Rotation, Position, Scale>
+        partial struct UpdateTransformsJob : IJobEntity
         {
-            [ReadOnly] public NativeHashMap<int, float4x4> parentMatrices;
+            [ReadOnly] public NativeParallelHashMap<int, float4x4> parentMatrices;
 
-            public void Execute(
-                Entity entity,
-                int index,
-                [ReadOnly] ref ParentId parent,
+            void Execute(
                 ref WorldTransform transform,
-                [ReadOnly] ref Rotation rotation,
-                [ReadOnly] ref Position position,
-                [ReadOnly] ref Scale scale)
+                in ParentId parent,
+                in Rotation rotation,
+                in Position position,
+                in Scale scale)
             {
                 // it's a lot cheaper to set parentId to zero instead of removing the ParentId component
-                if (parent.Value != 0 && parent.Active)
+                if (parent.Active && parent.Value != 0)
                 {
                     parentMatrices.TryGetValue(parent.Value, out float4x4 parentMatrix);
             
@@ -75,6 +83,5 @@ namespace PaintECS
             }
         }
         #endregion
-
     }
 }

@@ -41,6 +41,10 @@ namespace DefaultNamespace
 
         void Start()
         {
+            if (_paintEditorEnabled)
+            {
+                Debug.Log(">_paintEditorEnabled");
+            }
           _entity = PaintViewBuilder.Create()
                 .SetSize(width, height)
                 .SetColorSource(new PaletteColorSource(width, height))

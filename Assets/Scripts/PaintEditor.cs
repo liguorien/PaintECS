@@ -94,7 +94,7 @@ namespace PaintECS
 //                Debug.Log("viewIndex="+viewIndex);
                 SequenceBuilder
                     .FromEntity(_entity)
-                    .MoveView(0.15f, MoveDuration, MoveEasing,
+                    .MoveView(0f, MoveDuration, MoveEasing,
                         _positions[viewIndex],
                         quaternion.identity,
                         new float3(1, 1, 1)

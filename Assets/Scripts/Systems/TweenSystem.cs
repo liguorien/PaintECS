@@ -7,42 +7,51 @@ using UnityEngine;
 
 [UpdateBefore(typeof(TransformSystem))]
 [UpdateInGroup(typeof(SimulationSystemGroup))]
-public class TweenSystem : JobComponentSystem
+public partial struct TweenSystem : ISystem
 {
-    protected override JobHandle OnUpdate(JobHandle inputDependencies)
+    [BurstCompile]
+    public void OnCreate(ref SystemState state)
     {
-        return JobHandle.CombineDependencies(
-            new MoveToJob
-            {
-                deltaTime = Time.DeltaTime
-            }.Schedule(this, inputDependencies),
-            new RotateToJob
-            {
-                deltaTime = Time.DeltaTime
-            }.Schedule(this, inputDependencies)
-        );
+        state.RequireForUpdate<Position>();
+        state.RequireForUpdate<MoveTo>();
     }
 
     [BurstCompile]
-    struct MoveToJob : IJobForEach<Position, MoveTo>
+    public void OnUpdate(ref SystemState state)
+    {
+        state.Dependency = JobHandle.CombineDependencies(
+            
+            new MoveToJob
+            {
+                deltaTime = Time.deltaTime
+            }.ScheduleParallel(state.Dependency),
+
+            new RotateToJob
+            {
+                deltaTime = Time.deltaTime
+            }.ScheduleParallel(state.Dependency)
+        );
+    }
+    
+
+    [BurstCompile]
+    partial struct MoveToJob : IJobEntity
     {
         public float deltaTime;
 
         public void Execute(ref Position position, ref MoveTo moveTo)
         {
-            
             if (HandleTweenTiming(ref moveTo, ref deltaTime))
             {
                 float3 length = moveTo.Destination - moveTo.Origin;
 
                 position.Value = moveTo.Origin + length * GetTweenProgress(ref moveTo);
             }
-            
         }
     }
 
     [BurstCompile]
-    struct RotateToJob : IJobForEach<Rotation, RotateTo>
+    partial struct RotateToJob : IJobEntity
     {
         public float deltaTime;
 

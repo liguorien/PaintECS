@@ -9,6 +9,16 @@ namespace PaintECS.Entities
     public class SequenceBuilder
     {
         private static EntityManager EntityManager => World.DefaultGameObjectInjectionWorld.EntityManager;
+
+        private static FixedList64Bytes<float> Wrap(params float[] values)
+        {
+            var wrapper = new FixedList64Bytes<float>();
+            foreach (var value in values)
+            {
+                wrapper.Add(value);
+            }
+            return wrapper;
+        }
         
         public static SequenceBuilder Create()
         {
@@ -36,7 +46,7 @@ namespace PaintECS.Entities
 
         public SequenceBuilder MoveView(float delay, float duration, Easing easing, float3 position, quaternion rotation, float3 scale){
             
-            var data = new ResizableArray64Byte<float>();
+            var data = new FixedList64Bytes<float>();
             
             // position
             data.Add(position.x);
@@ -74,7 +84,7 @@ namespace PaintECS.Entities
                 Type = CommandType.Explode,
                 Delay = delay,
                 Duration = duration,
-                Data = new ResizableArray64Byte<float>((float)easing)
+                Data = Wrap((float)easing)
             });
             return this;
         }
@@ -86,7 +96,7 @@ namespace PaintECS.Entities
                 Type = CommandType.Implode,
                 Delay = delay,
                 Duration = duration,
-                Data = new ResizableArray64Byte<float>((float)easing)
+                Data = Wrap((float)easing)
             });
             return this;
         }
@@ -98,7 +108,7 @@ namespace PaintECS.Entities
                 Type = CommandType.RestoreParent,
                 Delay = delay,
                 Duration = duration,
-                Data = new ResizableArray64Byte<float>(position.x, position.y, position.z)
+                Data = Wrap(position.x, position.y, position.z)
             });
             return this;
         }

@@ -31,7 +31,7 @@ namespace PaintECS
         public CommandType Type;
         public float Delay;
         public float Duration;
-        public ResizableArray64Byte<float> Data;
+        public FixedList64Bytes<float> Data;
 
     }
     

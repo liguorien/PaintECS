@@ -8,18 +8,20 @@ using UnityEngine;
 namespace PaintECS
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
-    public class InputSystem : JobComponentSystem
+    public partial struct InputSystem : ISystem
     {
-        private EntityCommandBufferSystem _commandBufferSystem;
-        private Vector3 _lastMousePosition = Vector3.zero;
-
-        protected override void OnCreate()
+        private Vector3 _lastMousePosition;
+        
+        public void OnCreate(ref SystemState state)
         {
-            _commandBufferSystem = World.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
+        
         }
 
-
-        protected override JobHandle OnUpdate(JobHandle inputDependencies)
+        public void OnDestroy(ref SystemState state)
+        {
+            
+        }
+        public void OnUpdate(ref SystemState state)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -28,41 +30,31 @@ namespace PaintECS
             else if (Input.GetMouseButton(0))
             {
                 Vector3 mousePosition = GetMouseWorldPosition();
-                
-               // Debug.DrawLine(lastMousePosition , mousePosition, Color.red, 1f, false);
-                
+
                 var hitList = new NativeQueue<Hit>(Allocator.TempJob);
-                
-                CaptureInputJob job = new CaptureInputJob
-                {
-                    hitList = hitList.AsParallelWriter(),
-                    mousePosition = mousePosition,
-                    lastMousePosition = _lastMousePosition
-                };
-
-                inputDependencies = job.Schedule(this, inputDependencies);
-
-                ProcessInputJob processJob = new ProcessInputJob
+                var jobHandle = new ProcessInputJob
                 {
                     HitList = hitList,
-                    Buffer = _commandBufferSystem.CreateCommandBuffer()
-                };
+                    Buffer = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>()
+                        .CreateCommandBuffer(state.WorldUnmanaged)
+                }.Schedule(
+                    new CaptureInputJob
+                    {
+                        hitList = hitList.AsParallelWriter(),
+                        mousePosition = mousePosition,
+                        lastMousePosition = _lastMousePosition
+                    }.ScheduleParallel(state.Dependency)
+                );
 
-                
-                
-                inputDependencies = IJobExtensions.Schedule(processJob, inputDependencies);
-
-                inputDependencies = hitList.Dispose(inputDependencies);
-                
-                _commandBufferSystem.AddJobHandleForProducer(inputDependencies);
+                state.Dependency = jobHandle;
+                hitList.Dispose(jobHandle);
                 
                 _lastMousePosition = mousePosition;
             }
-
-            return inputDependencies;
         }
         
-        protected Vector3 GetMouseWorldPosition()
+
+        Vector3 GetMouseWorldPosition()
         {
             return Camera.main.ScreenToWorldPoint(
                 new Vector3(
@@ -98,7 +90,7 @@ namespace PaintECS
 
         
         [BurstCompile]
-        struct CaptureInputJob : IJobForEachWithEntity<MouseInteractive, WorldTransform>
+        partial struct CaptureInputJob : IJobEntity
         {
 
             [WriteOnly] public NativeQueue<Hit>.ParallelWriter hitList;
@@ -106,7 +98,7 @@ namespace PaintECS
             [ReadOnly] public Vector3 lastMousePosition; // current=xy last=zw
             [ReadOnly] public Vector3 mousePosition; // current=xy last=zw
 
-            public void Execute(Entity entity, int index, ref MouseInteractive cube,
+            public void Execute(in Entity entity, ref MouseInteractive cube,
                 [ReadOnly] ref WorldTransform position)
             {
                 float x = position.Value.c3.x;
@@ -157,7 +149,7 @@ namespace PaintECS
                         {
                             Axis = axis,
                             Angle =  Mathf.Deg2Rad * 90,
-                            Duration = 0.5f,
+                            Duration = 1.5f,
                             Easing = Easing.StrongOut,
                             Enabled = true,
                             Direction = direction

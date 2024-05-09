@@ -30,13 +30,13 @@ namespace PaintECS
             
         }
 
-        public EntityBuilder Add<T>(T component) where T : struct, IComponentData
+        public EntityBuilder Add<T>(T component) where T : unmanaged, IComponentData
         {
             EntityManager.AddComponentData(_entity, component);
             return this;
         }
         
-        public EntityBuilder Set<T>(T component) where T : struct, IComponentData
+        public EntityBuilder Set<T>(ref T component) where T : unmanaged, IComponentData
         {
             EntityManager.SetComponentData(_entity, component);
             return this;
@@ -44,13 +44,13 @@ namespace PaintECS
 
         public EntityBuilder AddShared<T>(T component) where T : struct, ISharedComponentData
         {
-            EntityManager.AddSharedComponentData(_entity, component);
+            EntityManager.AddSharedComponentManaged(_entity, component);
             return this;
         }
         
         public EntityBuilder SetShared<T>(T component) where T : struct, ISharedComponentData
         {
-            EntityManager.SetSharedComponentData(_entity, component);
+            EntityManager.SetSharedComponentManaged(_entity, component);
             return this;
         }
         

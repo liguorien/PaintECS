@@ -8,7 +8,7 @@ namespace PaintECS
     {
         public float3 Position;
 
-        public static RestoreParentView fromData(ResizableArray64Byte<float> data)
+        public static RestoreParentView fromData(FixedList64Bytes<float> data)
         {
             return new RestoreParentView
             {

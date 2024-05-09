@@ -136,8 +136,8 @@ namespace PaintECS
 
 
             var prefab = EntityManager.CreateEntity(archetype);
-            EntityManager.SetSharedComponentData(prefab, renderData);
-            EntityManager.SetSharedComponentData(prefab, parentView.ParentViewId());
+            EntityManager.SetSharedComponentManaged(prefab, renderData);
+            EntityManager.SetSharedComponentManaged(prefab, parentView.ParentViewId());
 
             Profiler.BeginSample("PaintViewBuilder.CreateEntities");
             var count = _width * _height;

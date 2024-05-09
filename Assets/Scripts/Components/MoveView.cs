@@ -14,7 +14,7 @@ namespace PaintECS
         
         
         
-        public static MoveView fromData(float duration, ResizableArray64Byte<float> data)
+        public static MoveView fromData(float duration, FixedList64Bytes<float> data)
         {
             return new MoveView
             {
