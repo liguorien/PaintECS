@@ -11,16 +11,7 @@ namespace PaintECS
     public partial struct InputSystem : ISystem
     {
         private Vector3 _lastMousePosition;
-        
-        public void OnCreate(ref SystemState state)
-        {
-        
-        }
 
-        public void OnDestroy(ref SystemState state)
-        {
-            
-        }
         public void OnUpdate(ref SystemState state)
         {
             if (Input.GetMouseButtonDown(0))
@@ -31,23 +22,28 @@ namespace PaintECS
             {
                 Vector3 mousePosition = GetMouseWorldPosition();
 
+                var commandBufferSystem = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>();
+                var commandBuffer = commandBufferSystem.CreateCommandBuffer(state.WorldUnmanaged);
                 var hitList = new NativeQueue<Hit>(Allocator.TempJob);
-                var jobHandle = new ProcessInputJob
+
+                var captureInputJob = new CaptureInputJob
+                {
+                    hitList = hitList.AsParallelWriter(),
+                    mousePosition = mousePosition,
+                    lastMousePosition = _lastMousePosition
+                };
+                
+                var processInputJob = new ProcessInputJob
                 {
                     HitList = hitList,
-                    Buffer = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>()
-                        .CreateCommandBuffer(state.WorldUnmanaged)
-                }.Schedule(
-                    new CaptureInputJob
-                    {
-                        hitList = hitList.AsParallelWriter(),
-                        mousePosition = mousePosition,
-                        lastMousePosition = _lastMousePosition
-                    }.ScheduleParallel(state.Dependency)
+                    Buffer = commandBuffer
+                };
+
+                state.Dependency = processInputJob.Schedule(
+                    captureInputJob.ScheduleParallel(state.Dependency)
                 );
 
-                state.Dependency = jobHandle;
-                hitList.Dispose(jobHandle);
+                hitList.Dispose(state.Dependency);
                 
                 _lastMousePosition = mousePosition;
             }
@@ -71,6 +67,7 @@ namespace PaintECS
             public RotateTo rotateTo;
         }
 
+        [BurstCompile]
         struct ProcessInputJob : IJob
         {
             public NativeQueue<Hit> HitList;

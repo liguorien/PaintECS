@@ -18,7 +18,7 @@ namespace PaintECS
                 hitList = hitList.AsParallelWriter()
             };
 
-            job.Schedule(state.Dependency).Complete();
+            job.ScheduleParallel(state.Dependency).Complete();
             
             if (hitList.Count > 0)
             {

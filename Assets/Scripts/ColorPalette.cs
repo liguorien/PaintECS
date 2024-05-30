@@ -69,10 +69,9 @@ namespace DefaultNamespace
             _diag = math.distance(float2.zero, new float2(_width, _height));
         }
 
-        public Color getColor(int index)
+        public Color getColor(int x, int y)
         {
-            float x = index % _width;
-            float y = math.floor(index / _width);
+      
           
             var result = new Color(x/_width, y/_width, 1 - math.distance(new float2(x,y), new float2(_width,_height)) / _diag, 1f);
             

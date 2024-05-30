@@ -17,6 +17,8 @@ namespace PaintECS
 
         public int height;
 
+        public Vector2Int ImageOffset;
+
         //public GameObject cubePrefab;
         public Mesh mesh;
         public Material material;
@@ -44,9 +46,9 @@ namespace PaintECS
         private readonly float3[] _positions =
         {
             new float3(0, 0, 0),
-            new float3(150, 62, 130),
-            new float3(150, -2, 130),
-            new float3(150, -66, 130)
+            new float3(200, 0, 0),
+            new float3(-200, 0, 0),
+            //new float3(300, -300, 130)
         }; 
 
         private EntityQuery _cubeQuery;
@@ -82,24 +84,16 @@ namespace PaintECS
                     viewIndex = 0;
                 }
 
-//
-//                if (viewIndex == 0)
-//                {
-//                    EntityManager.AddComponentData(_entity, new CameraController{Active = true, Offset = new float3(width/2,height/2, -width)});
-//                }else if (EntityManager.HasComponent<CameraController>(_entity))
-//                {
-//                    EntityManager.RemoveComponent<CameraController>(_entity);
-//                }
-                
-//                Debug.Log("viewIndex="+viewIndex);
                 SequenceBuilder
                     .FromEntity(_entity)
+                    .Explode(0, ExplodeDuration, Easing.StrongIn)
                     .MoveView(0f, MoveDuration, MoveEasing,
                         _positions[viewIndex],
                         quaternion.identity,
                         new float3(1, 1, 1)
                     )
                     .RestoreParent()
+                    .Implode(0, ImplodeDuration, Easing.StrongOut)
                     .Build();
             }
         }
@@ -110,6 +104,7 @@ namespace PaintECS
           _entity = PaintViewBuilder.Create()
                 .SetSize(width, height)
                 .SetTexture(sourceTexture)
+                .SetImageOffset(ImageOffset)
                 .FromTransform(transform)
                 .SetRenderData(mesh, material)
                 .Build();

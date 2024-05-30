@@ -115,7 +115,7 @@ namespace PaintECS.Entities
         
         public SequenceBuilder RestoreParent()
         {
-            return RestoreParent(0.5f, 0.5f, float3.zero);
+            return RestoreParent(0.05f, 0.05f, float3.zero);
         }
 
         public Entity Build()

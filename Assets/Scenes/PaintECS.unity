@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 137538541}
   - component: {fileID: 137538540}
   m_Layer: 0
-  m_Name: ChuckNorris
+  m_Name: Lion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -152,17 +152,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf674fbea370431dbd09117f2c7df5ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 256
-  height: 256
+  width: 200
+  height: 200
+  ImageOffset: {x: 28, y: 28}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  material: {fileID: 2100000, guid: 5705c3c33ad7d64d688c796953ef11d8, type: 2}
-  sourceTexture: {fileID: 2800000, guid: e2f98f064b0bad18d9f2b1be4a7693bf, type: 3}
-  ExplodeDuration: 8.5
-  ExplodeEasing: 4
-  ImplodeDuration: 1
-  ImplodeEasing: 6
-  MoveDuration: 0.5
-  MoveEasing: 6
+  material: {fileID: 2100000, guid: 486eabcc64571854d893b8cf98742906, type: 2}
+  sourceTexture: {fileID: 2800000, guid: 8c736b8a028218ddc90cda7a9307eab0, type: 3}
+  ExplodeDuration: 0.7
+  ExplodeEasing: 7
+  ImplodeDuration: 0.5
+  ImplodeEasing: 7
+  MoveDuration: 1.5
+  MoveEasing: 7
   viewIndex: 0
 --- !u!4 &137538541
 Transform:
@@ -210,6 +211,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 64
   height: 64
+  ImageOffset: {x: 0, y: 0}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 486eabcc64571854d893b8cf98742906, type: 2}
   sourceTexture: {fileID: 2800000, guid: 81d8996245abc9e0bab584a2b860d353, type: 3}
@@ -229,7 +231,7 @@ Transform:
   m_GameObject: {fileID: 175742408}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 287, y: 167, z: 0}
+  m_LocalPosition: {x: 287, y: -300, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -264,11 +266,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf674fbea370431dbd09117f2c7df5ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 64
-  height: 64
+  width: 256
+  height: 256
+  ImageOffset: {x: 0, y: 0}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 486eabcc64571854d893b8cf98742906, type: 2}
-  sourceTexture: {fileID: 2800000, guid: 9cc978b6107e1b04587af7ffe2a48ff3, type: 3}
+  sourceTexture: {fileID: 2800000, guid: ce6de1ae568c087e6b49c0e0dff8d4c7, type: 3}
   ExplodeDuration: 8.5
   ExplodeEasing: 4
   ImplodeDuration: 0.6
@@ -285,7 +288,7 @@ Transform:
   m_GameObject: {fileID: 340837771}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 299.7, y: -1.9, z: 0}
+  m_LocalPosition: {x: 299.7, y: 300, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -322,6 +325,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 64
   height: 64
+  ImageOffset: {x: 0, y: 0}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 486eabcc64571854d893b8cf98742906, type: 2}
   sourceTexture: {fileID: 2800000, guid: 73b841a41861990ecb0f37bbb1aea38c, type: 3}
@@ -376,17 +380,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf674fbea370431dbd09117f2c7df5ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 256
-  height: 256
-  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  width: 200
+  height: 200
+  ImageOffset: {x: 28, y: 28}
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 486eabcc64571854d893b8cf98742906, type: 2}
-  sourceTexture: {fileID: 2800000, guid: 8c736b8a028218ddc90cda7a9307eab0, type: 3}
-  ExplodeDuration: 8.5
-  ExplodeEasing: 4
-  ImplodeDuration: 1
+  sourceTexture: {fileID: 2800000, guid: e2f98f064b0bad18d9f2b1be4a7693bf, type: 3}
+  ExplodeDuration: 1
+  ExplodeEasing: 7
+  ImplodeDuration: 0.8
   ImplodeEasing: 6
-  MoveDuration: 0.5
-  MoveEasing: 6
+  MoveDuration: 1.5
+  MoveEasing: 7
   viewIndex: 1
 --- !u!4 &579432711
 Transform:
@@ -397,7 +402,7 @@ Transform:
   m_GameObject: {fileID: 579432709}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 295, y: 0, z: 0}
+  m_LocalPosition: {x: 200, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -434,6 +439,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 64
   height: 64
+  ImageOffset: {x: 0, y: 0}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 486eabcc64571854d893b8cf98742906, type: 2}
   sourceTexture: {fileID: 2800000, guid: 97cb62fd3d3f3843ba16c7c51fd38a18, type: 3}
@@ -499,7 +505,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be76e5f14cfee674cb30b491fb72b09b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boost: 5
+  boost: 4
   positionLerpTime: 0.2
   mouseSensitivityCurve:
     serializedVersion: 2
@@ -587,7 +593,7 @@ Transform:
   m_GameObject: {fileID: 1687258581}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 26, y: 33, z: -65}
+  m_LocalPosition: {x: 120, y: 120, z: -200}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -637,6 +643,63 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!1 &1954149221
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1954149223}
+  - component: {fileID: 1954149222}
+  m_Layer: 0
+  m_Name: ChuckNorris (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1954149222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954149221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf674fbea370431dbd09117f2c7df5ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  width: 200
+  height: 200
+  ImageOffset: {x: 28, y: 28}
+  mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  material: {fileID: 2100000, guid: 486eabcc64571854d893b8cf98742906, type: 2}
+  sourceTexture: {fileID: 2800000, guid: 2069c9f5552d79b0db574c9366130f90, type: 3}
+  ExplodeDuration: 1.3
+  ExplodeEasing: 4
+  ImplodeDuration: 1
+  ImplodeEasing: 4
+  MoveDuration: 1.5
+  MoveEasing: 7
+  viewIndex: 2
+--- !u!4 &1954149223
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954149221}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -200, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2061822649
 GameObject:
   m_ObjectHideFlags: 0
@@ -880,3 +943,4 @@ SceneRoots:
   - {fileID: 2061822650}
   - {fileID: 137538541}
   - {fileID: 579432711}
+  - {fileID: 1954149223}

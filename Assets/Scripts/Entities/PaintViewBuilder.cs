@@ -27,7 +27,7 @@ namespace PaintECS
 
         private Mesh _mesh;
         private Material _material;
-        
+        private Vector2Int _offset;
         private Texture2D _sourceTexture;
 
 
@@ -72,11 +72,17 @@ namespace PaintECS
             _scale = value;
             return this;
         }
+        
+        public PaintViewBuilder SetImageOffset(Vector2Int value)
+        {
+            _offset = value;
+            return this;
+        }
 
 
         public PaintViewBuilder SetTexture(Texture2D texture)
         {
-            _colorSource = new TextureColorSource(texture.GetPixels());
+            _colorSource = new TextureColorSource(texture.GetPixels(), texture.width);
             return this;
         }
         
@@ -156,18 +162,22 @@ namespace PaintECS
             var scales = new NativeArray<Scale>(count, Allocator.TempJob);
             var parentIds = new NativeArray<ParentId>(count, Allocator.TempJob);
 
-            for (int x = 0; x < _width; ++x)
+            int index = 0;
+            
+            for (int x = _offset.x; x < _offset.x + _width; ++x)
             {
-                for (int y = 0; y < _height; ++y)
+                for (int y = _offset.y; y < _offset.y + _height; ++y)
                 {
-                    var index = y * _width + x;
+                   
 
                     parentIds[index] = parentId;
-                    colors[index] = new RenderColor {Value = _colorSource.getColor(index)};
+                    colors[index] = new RenderColor {Value = _colorSource.getColor(x, y)};
                     pixelCubes[index] = new PixelCube {Position = new int2(x, y)};
                     positions[index] = new Position {Value = new float3(x, y, 0)};
                     rotations[index] = new Rotation {Value = quaternion.identity};
                     scales[index] = new Scale {Value = new float3(1, 1, 1)};
+
+                    index++;
                 }
             }
 
@@ -225,22 +235,25 @@ namespace PaintECS
 
      public interface IColorSource
     {
-        Color getColor(int index);
+        Color getColor(int x, int y);
     }
 
     class TextureColorSource : IColorSource
     {
-        private Color[] _colors;
+        private readonly Color[] _colors;
+        private readonly int _textureWidth;
 
-        public TextureColorSource(Color[] colors)
+        public TextureColorSource(Color[] colors, int textureWidth)
         {
             _colors = colors;
+            _textureWidth = textureWidth;
         }
 
-        public Color getColor(int index)
+        public Color getColor(int x, int y)
         {
-         //   Debug.Log("index/"+ _colors.Length);
-            if (index < _colors.Length)
+            int index = y * _textureWidth + x;
+         
+            if (index >= 0 && index < _colors.Length)
             {
                 return _colors[index];    
             }
@@ -269,7 +282,7 @@ namespace PaintECS
             _color = new Color(r,g,b,a);
         }
 
-        public Color getColor(int index)
+        public Color getColor(int x, int y)
         {
             return _color;
         }
